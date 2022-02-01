@@ -1,5 +1,6 @@
 import requests
 from hashlib import sha1
+import sys
 def request_data(query):
     url = 'https://api.pwnedpasswords.com/range/' + str(query)
     res = requests.get(url)
@@ -8,9 +9,11 @@ def request_data(query):
     return res
 
 def get_password_check(hashes,hash_tail ):
-    hashes = (line.split(':') for line in hashes.text.splitline)
+    hashes = (line.split(':') for line in hashes.text.splitlines())
     for h, count in hashes:
-        print(h, count)
+        if h == hash_tail:
+            return count
+    return 0
 
 
 def pwned_api_check(password):
@@ -19,4 +22,12 @@ def pwned_api_check(password):
     response = request_data(first5_char)
     return get_password_check(response, tail)
 
-print(pwned_api_check('emmyj'))
+def main(args):
+    for password in args:
+        count = pwned_api_check(password)
+        if count:
+            print(f'{password} was found {count} times ... you shoupld probably change your password ')
+        else:
+            print(f'{password} was not found ...carry on')
+
+main(sys.argv[1:])
